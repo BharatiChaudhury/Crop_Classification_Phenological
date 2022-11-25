@@ -1,0 +1,9 @@
+Crop Type:
+0->corn
+1->cotton
+2->soybean
+
+Crop Growth Stage:
+0->early
+1->mid
+2->harvest
