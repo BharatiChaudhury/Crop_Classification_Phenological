@@ -101,14 +101,14 @@ def Conv1D_Conv2D_TCN(input_shape1, input_shape2, multitask):
     input1 = Input(input_shape1)
     input2 = Input(input_shape2)
     
-    #s1 = Conv1D(64, 5, activation ='relu', input_shape = input_shape1[1:])(input1)
-    #s2 = Conv1D(64, 5, activation = 'relu', padding = 'same')(s1)
-    #s3 = Conv1D(64, 5, activation = 'relu', padding = 'same')(s2)
+    s1 = Conv1D(64, 5, activation ='relu', input_shape = input_shape1[1:])(input1)
+    s2 = Conv1D(64, 5, activation = 'relu', padding = 'same')(s1)
+    s3 = Conv1D(64, 5, activation = 'relu', padding = 'same')(s2)
     
     
     ## Temporal Convolution Modeling
-    #x1 = TCN(128,dilations = [1, 2, 4, 8, 16, 32], return_sequences=True, activation = 'wavenet',name = 'tnc1')(input1)
-    #x2 = TCN(64,dilations = [1, 2, 4, 8, 16, 32], return_sequences=True, activation = 'wavenet',name = 'tnc2')(x1)
+    x1 = TCN(128,dilations = [1, 2, 4, 8, 16, 32], return_sequences=True, activation = 'wavenet',name = 'tnc1')(input1)
+    x2 = TCN(64,dilations = [1, 2, 4, 8, 16, 32], return_sequences=True, activation = 'wavenet',name = 'tnc2')(x1)
     
     
     s4 = Conv1D(64, 30, activation ='relu', input_shape = input_shape1[1:])(input1)
@@ -120,7 +120,6 @@ def Conv1D_Conv2D_TCN(input_shape1, input_shape2, multitask):
     X1 = TCN(128,dilations = [1, 2, 4, 8, 16, 32], return_sequences=True, activation = 'wavenet',name = 'tnc3')(X1)
     X1 = TCN(64,dilations = [1, 2, 4, 8, 16, 32], return_sequences=True, activation = 'wavenet',name = 'tnc4')(X1)
     
-    #x2 = Flatten()(x2)
     x4 = Flatten()(X1)
     #fused = concatenate([x2,x4])
     #z = Flatten()(fused)
@@ -154,15 +153,12 @@ def Conv2D_3D_TCN(input_shape1,input_shape2,multitask,fusion):
     z = tf.keras.layers.Reshape((3*8*5,4))(X)
     z = Flatten()(z)
     
-    #X1 = Flatten()(X1)
     
     
     s1 = Conv2D(64, 3, activation='relu',input_shape=(64, 64, 5),padding="same",kernel_initializer=kernel_initializer,kernel_regularizer=kernel_regularizer)(input2)
-    #s1 = MaxPooling2D(pool_size=2)(s1)
     s1 = BatchNormalization()(s1)
     x1 = s1
     s1 = Conv2D(64, 3, activation='relu', padding="same",kernel_initializer=kernel_initializer,kernel_regularizer=kernel_regularizer)(s1)
-    #s1 = MaxPooling2D(pool_size=2)(s1)
     x2 = s1
 
 
@@ -171,22 +167,18 @@ def Conv2D_3D_TCN(input_shape1,input_shape2,multitask,fusion):
     merge = concatenate([x1,x2])
     s1 = merge
     s1 = Conv2D(64, 3, activation='relu', padding="same",kernel_initializer=kernel_initializer,kernel_regularizer=kernel_regularizer)(s1)
-    #s1 = MaxPooling2D(pool_size=2)(s1)
+    s1 = MaxPooling2D(pool_size=2)(s1)
     s1 = BatchNormalization()(s1)
     x3 = s1
     merge = concatenate([x2, x3])
     s1 = merge
     s1 = Conv2D(64, 3, activation='relu', padding="same",kernel_initializer=kernel_initializer,kernel_regularizer=kernel_regularizer)(s1)
-    #s1 = MaxPooling2D(pool_size=2)(s1)
     s1 = BatchNormalization()(s1)
-    #z1 = Flatten()(s1)
     z1 = tf.keras.layers.Reshape((32,2*64*64))(s1)
-    #z1 = Flatten()(s1)
     z1 = Flatten()(z1)
     X1 = concatenate([z,z1])
 
     X1 = tf.keras.layers.Reshape((32,8207))(X1)
-    #X1 = z1 
     
     z1 = X1
     
@@ -195,18 +187,12 @@ def Conv2D_3D_TCN(input_shape1,input_shape2,multitask,fusion):
             
     X2 = Flatten()(X2)
     
-    #X1 = concatenate([X1,X2])
-    #X1 = Flatten()(X1)
-    #X = X1
     X1 = X2
     
-    
-    #X1 = z1
     X1 = Dense(512, activation= 'relu',  activity_regularizer=regularizers.l2(l2_rate))(X1)
     X1 = Dense(512, activation= 'relu',  activity_regularizer=regularizers.l2(l2_rate))(X1)
     
     out1 = Dense(3, activation = 'softmax',name="ct",)(X1)
-    #X1 = Dense(256, activation= 'relu',  activity_regularizer=regularizers.l2(0.001))(X)
     out2 = Dense(3, activation = 'softmax',name="cg",)(X1)
     if fusion:
         if multitask:
@@ -219,7 +205,6 @@ def Conv2D_3D_TCN(input_shape1,input_shape2,multitask,fusion):
         else:
             model = Model(inputs=input1, outputs = out1, name='Archi_3D_TCN')
     return model
-     #X = Conv3D(filters=4, kernel_size=(3,
     
 def mx_tcn_model(input_shape1, multitask):
     input1 = Input(input_shape1)
@@ -229,8 +214,8 @@ def mx_tcn_model(input_shape1, multitask):
     x2 = TCN(64,dilations = [1, 2, 4, 8, 16, 32], return_sequences=True, activation = 'wavenet',name = 'tnc2')(x1)
     
     z = Flatten()(x2)
-    #dropout = Dropout(0.5)
-    #z = dropout(z,training=True)
+    dropout = Dropout(0.5)
+    z = dropout(z,training=True)
     y1 = Dense(256, activation= 'relu',  activity_regularizer=regularizers.l2(0.001))(z)
     y1 = Dense(3, activation = 'softmax',name="cg",)(y1)
     
